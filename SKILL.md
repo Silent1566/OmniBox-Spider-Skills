@@ -145,6 +145,23 @@ description: |-
 - `detail()`：默认不要全量 `Promise.all` 打满，优先使用限并发（建议 4）。
 - 元数据、弹幕、刮削增强链路失败时，应尽量降级，不阻塞主链路返回。
 
+### 13) 优先考虑新版 SDK 的缓存能力
+- 官方最新版 SDK 已明确提供：`getCache` / `setCache` / `deleteCache`。
+- 对高频、重复、跨请求的解析结果，优先考虑缓存，而不是每次都重新打全链路。
+- 尤其适合缓存：
+  - 搜索结果
+  - `getDriveInfoByShareURL()` 的识别结果
+  - `detail()` 中的文件列表 / 递归视频文件结果
+- 设计缓存时要注意：key 稳定、过期时间合理、失败时安全降级。
+
+### 14) `getVideoMediaInfo` 要晚用，不要太早打在搜索阶段
+- 官方最新版 SDK 已明确提供 `getVideoMediaInfo(playUrl, headers)`（需完整版）。
+- 它更适合在已经拿到真实可播地址后，用于：
+  - 获取总时长 / 文件大小
+  - 给 `addPlayHistory` 写入 `totalDuration`
+  - 在详情页里补媒体信息
+- 不建议在搜索阶段大规模调用，否则很容易拖慢首屏返回。
+
 ## 常见开发策略
 
 ### 普通采集站

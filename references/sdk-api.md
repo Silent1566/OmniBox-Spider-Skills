@@ -120,9 +120,20 @@ data = json.loads(response.get("body", "{}"))
 - 如果已知真实播放页，可优先交给它
 - 但它也可能受运行环境 bug 影响，不能盲目当唯一方案
 
-### `getMediaInfo(url, headers)`
+### `getVideoMediaInfo(playUrl, headers)` ✅
 作用：
-- 探测媒体信息
+- 根据播放地址探测媒体信息
+- 返回 ffprobe 原始结果，常见可用字段包括 `format`、`streams`
+
+常见用途：
+- 获取总时长 `format.duration`
+- 获取文件大小 `format.size`
+- 在 `addPlayHistory` 时补 `totalDuration`
+- 在详情页里展示时长 / 大小等媒体信息
+
+说明：
+- 需要完整版运行环境
+- 更适合在已经拿到可播放地址之后调用，不建议在搜索阶段大规模探测
 
 ### `getDanmakuByFileName(fileName)`
 作用：
@@ -135,6 +146,32 @@ data = json.loads(response.get("body", "{}"))
 ### `addPlayHistory(data)`
 作用：
 - 记录观看历史
+- 官方文档示例中可配合 `getVideoMediaInfo()` 拿到的时长写入 `totalDuration`
+
+---
+
+## 缓存能力 ✅
+
+### `getCache(key)`
+作用：
+- 读取缓存，未命中返回 `null / None`
+
+### `setCache(key, value, exSeconds)`
+作用：
+- 写入缓存
+- 支持设置过期秒数
+
+### `deleteCache(key)`
+作用：
+- 删除缓存，返回删除条数
+
+说明：
+- 官方描述为“用于跨请求缓存解析结果（语义接近 Redis）”
+- 很适合缓存：
+  - 搜索结果
+  - 网盘信息识别结果
+  - 详情页文件列表
+  - 递归目录扫描结果
 
 ---
 
