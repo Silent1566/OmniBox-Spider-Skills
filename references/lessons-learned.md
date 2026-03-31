@@ -37,3 +37,17 @@
 2. 版本号变更（旧 -> 新）
 3. 静态检查结果
 4. 本次核心改动点
+
+## 8. Web 播放链路优先保 URL 完整性
+- 对 OmniBox 网页端（`context.from === "web"`）的播放链路，优先保证 URL 在 `detail -> play -> 前端` 全链路中完整透传。
+- 如果播放页 / 直链自带 `&token`、`&time`、`sign` 等查询参数，不要裸传到 `playId`；优先先编码（如 `encodeURIComponent`），到 `play()` 再解码。
+- 网页端很多时候不会可靠消费返回的 `header`；因此不要把 `Referer` / `UA` / `Origin` 当成 web 端成功播放的唯一前提。
+- 若站点强依赖 header，优先考虑：
+  1. 在 `play()` 内提前解出最终可播直链
+  2. 或走代理层，而不是假设网页端一定会带你返回的 header
+
+## 9. GitHub PR 正文排版
+- 用 `gh pr create` / `gh pr edit` 传正文时，必须使用真实换行，不要把字面 `\n` 当成换行提交。
+- 稳妥做法：优先写入临时 `.md` 文件，再用 `--body-file` 传给 GitHub CLI。
+- PR 标题、正文、交付说明默认优先中文，除非上游仓库明确偏好英文。
+- 如果是修 OmniBox 播放链路问题，PR 描述里要明确写清：问题出现在哪一段链路（如 `playId` 透传 / web header / 嗅探兜底），避免 reviewer 只看到“修播放”这种过于笼统的表述。
