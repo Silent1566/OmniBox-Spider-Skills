@@ -38,6 +38,7 @@
 3. 静态检查结果
 4. 本次核心改动点
 
+
 ## 8. Web 播放链路优先保 URL 完整性
 - 对 OmniBox 网页端（`context.from === "web"`）的播放链路，优先保证 URL 在 `detail -> play -> 前端` 全链路中完整透传。
 - 如果播放页 / 直链自带 `&token`、`&time`、`sign` 等查询参数，不要裸传到 `playId`；优先先编码（如 `encodeURIComponent`），到 `play()` 再解码。
@@ -51,3 +52,18 @@
 - 稳妥做法：优先写入临时 `.md` 文件，再用 `--body-file` 传给 GitHub CLI。
 - PR 标题、正文、交付说明默认优先中文，除非上游仓库明确偏好英文。
 - 如果是修 OmniBox 播放链路问题，PR 描述里要明确写清：问题出现在哪一段链路（如 `playId` 透传 / web header / 嗅探兜底），避免 reviewer 只看到“修播放”这种过于笼统的表述。
+
+## 10. 新站分类 code 不要靠猜
+- 新写 OmniBox 站点源时，首页 `class.type_id` 与分类请求里的 `topCode`，优先从站点前端真实菜单 / 路由 / hydration 数据里抠出真实 code，不要凭经验猜 `tv`、`anime` 这类通用名字。
+- 真实站点经常使用自己的 code，例如这次乌云影视实际用了 `tv_series` 与 `animation`；如果误写成 `tv` / `anime`，分类接口会直接 500。
+- 遇到分类报错时，先排查：`class.type_id` 是否与站点前端真实 code 一致，其次再看 filters 和分页参数。
+
+## 11. filters 返回结构要贴 OmniBox 前端预期
+- 当前 OmniBox 前端里，首页 `filters` 更稳妥的返回格式仍是：`分类ID -> 筛选项数组`。
+- 每个筛选项对象优先按常见形状返回：`{ key, name, init, value: [{ name, value }] }`。
+- 如果误返回成自定义对象嵌套（例如 `movie: { sort: [...] }` 这种 object-of-objects），前端可能在点击分类时直接报错。
+
+## 12. 新增采集源后别忘了补更新注解
+- 参考 OmniBox-Spider 现有采集源头注释，新源落仓时除 `@name` / `@version` 外，通常还应补齐：`@author`、`@description`、`@downloadURL`。
+- 若该脚本准备走远程更新链路，`@downloadURL` 应直接指向仓库主分支可访问的原始文件地址。
+- 这类注释补齐后，记得同步升级 `@version`，并重新做一次静态检查。
